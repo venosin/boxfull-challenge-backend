@@ -1,0 +1,77 @@
+// schema.prisma
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName    String
+  lastName     String
+  email        String   @unique
+  phone        String
+  password     String
+  profileImage String?  // Requerido por diseño
+  gender       String?
+  birthDate    DateTime?
+  role         String   @default("USER")
+  createdAt    DateTime @default(now())
+  orders       Order[]
+}
+
+model Order {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String      @db.ObjectId
+  status        OrderStatus @default(PENDING)
+  
+  // -- RECOLECCIÓN --
+  pickupAddress String
+  scheduledDate DateTime
+
+  // -- DESTINATARIO --
+  recipientName         String
+  recipientLastName     String
+  recipientEmail        String
+  recipientPhone        String
+  recipientAddress      String
+  recipientDepartment   String // Dropdown
+  recipientMunicipality String // Dropdown
+  referencePoint        String?
+  instructions          String?
+
+  // -- PAQUETES --
+  packages      Json[] 
+  // Estructura: { length, height, width, weight, content }
+
+  // -- LOGICA FINANCIERA (PUNTO EXTRA) --
+  isCOD             Boolean  @default(false)
+  expectedCodAmount Float?   @default(0) // Input Usuario
+  collectedAmount   Float?   @default(0) // Input Webhook
+  
+  // SNAPSHOTS & RESULTADOS
+  shippingCost      Float    
+  commissionAmount  Float?   @default(0)
+  settlementAmount  Float?   // Ganancia Final
+  isSettled         Boolean  @default(false)
+
+  createdAt     DateTime    @default(now())
+}
+
+model ShippingConfig {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  dayOfWeek Int    @unique // 1=Lunes, 7=Domingo
+  baseCost  Float
+}
+
+enum OrderStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
