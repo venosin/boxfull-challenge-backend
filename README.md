@@ -18,7 +18,7 @@ API RESTful desarrollada con **NestJS**, **Prisma** y **MongoDB** para la gesti√
 ### 2. Instalaci√≥n
 ```bash
 # Entrar al directorio del backend
-cd backend
+cd boxfull-challenge-backend
 
 # Instalar dependencias
 npm install
